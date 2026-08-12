@@ -1,0 +1,53 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg-primary: #09090b;
+    --bg-secondary: #111114;
+    --bg-tertiary: #16161a;
+    --card-bg: #18181c;
+    --border-subtle: rgba(255, 255, 255, 0.08);
+    --accent-gradient: linear-gradient(135deg, #ff4d8d 0%, #a855f7 50%, #6366f1 100%);
+  }
+
+  body {
+    background-color: var(--bg-primary);
+    color: #f4f4f5;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    overflow-x: hidden;
+  }
+}
+
+/* Custom Subtle Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #09090b;
+}
+::-webkit-scrollbar-thumb {
+  background: #27272a;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3f3f46;
+}
+
+/* Cinematic Gradient Text Utility */
+.text-gradient-cinematic {
+  background: linear-gradient(135deg, #ffffff 0%, #e4e4e7 40%, #ff4d8d 70%, #a855f7 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Gradient Button Accent */
+.btn-primary-gradient {
+  background: linear-gradient(135deg, #ff4d8d 0%, #a855f7 50%, #6366f1 100%);
+  box-shadow: 0 10px 25px -5px rgba(168, 85, 247, 0.3);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-primary-gradient:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 15px 30px -5px rgba(255, 77, 141, 0.4);
+}
