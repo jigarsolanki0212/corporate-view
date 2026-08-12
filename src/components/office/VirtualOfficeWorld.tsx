@@ -10,7 +10,7 @@ import { CafeteriaRoom } from './rooms/CafeteriaRoom';
 import { BreakAreaRoom } from './rooms/BreakAreaRoom';
 import { ExitRoom } from './rooms/ExitRoom';
 import { OfficeMiniMap } from './OfficeMiniMap';
-import { Clock, Map, Trophy } from 'lucide-react';
+import { Clock, Map, Trophy, Users } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export const VirtualOfficeWorld: React.FC = () => {
@@ -33,10 +33,21 @@ export const VirtualOfficeWorld: React.FC = () => {
   };
 
   return (
-    <div className="w-full min-h-[82vh] flex flex-col justify-between p-4 sm:p-6 relative overflow-hidden">
+    <div className="w-full min-h-[85vh] flex flex-col justify-between p-4 sm:p-6 relative overflow-hidden">
       
+      {/* Real Cinematic Animated Office Background Image */}
+      <div className="absolute inset-0 -z-20 overflow-hidden pointer-events-none">
+        <img
+          src="/office_bg.png"
+          alt="Cinematic Modern Office Environment with People Working"
+          className="w-full h-full object-cover object-center opacity-30 mix-blend-luminosity scale-105 animate-pulse transition-transform duration-1000"
+          style={{ animationDuration: '8s' }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#09090b] via-[#09090b]/80 to-[#09090b]/40" />
+      </div>
+
       {/* Top Office Status Bar */}
-      <div className="w-full max-w-5xl mx-auto border-b border-white/10 pb-3 flex items-center justify-between text-xs font-mono">
+      <div className="w-full max-w-5xl mx-auto border-b border-white/10 pb-3 flex items-center justify-between text-xs font-mono backdrop-blur-md px-4 py-2 rounded-2xl bg-black/40">
         
         {/* Clock & Status */}
         <div className="flex items-center space-x-3">
@@ -48,6 +59,11 @@ export const VirtualOfficeWorld: React.FC = () => {
           <span className="flex items-center gap-1 text-purple-400 font-bold">
             <Trophy className="h-3.5 w-3.5" />
             <span>{discoveries.length} DISCOVERIES</span>
+          </span>
+          <span className="hidden sm:inline text-zinc-600">|</span>
+          <span className="hidden sm:flex items-center gap-1 text-emerald-400 font-bold">
+            <Users className="h-3.5 w-3.5" />
+            <span>STAFF ACTIVE</span>
           </span>
         </div>
 
