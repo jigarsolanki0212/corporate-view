@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState } from 'react';
 import type { ReactNode } from 'react';
-import type { Language, MoodId, OfficeZone, CorporateMoment, SongTrack, UserStats, CorporateLifeId } from '../types';
+import type { Language, MoodId, OfficeZone, CorporateMoment, SongTrack, UserStats, CorporateLifeId, OfficeRoomId } from '../types';
 import { HINDI_MOMENTS } from '../data/hindiMoments';
 import { ENGLISH_MOMENTS } from '../data/englishMoments';
 import { SONGS } from '../data/songs';
@@ -16,6 +16,15 @@ interface AppContextType {
   setSelectedMoodId: (moodId: MoodId) => void;
   selectedLifeProfile: CorporateLifeId;
   setSelectedLifeProfile: (profile: CorporateLifeId) => void;
+  
+  // Office World Room State
+  currentRoom: OfficeRoomId;
+  navigateToRoom: (roomId: OfficeRoomId) => void;
+  discoveredRooms: string[];
+  discoveries: string[];
+  addDiscovery: (discoveryId: string) => void;
+  officeTime: string;
+
   currentMomentIndex: number;
   currentMomentsList: CorporateMoment[];
   currentMoment: CorporateMoment;
@@ -37,7 +46,7 @@ interface AppContextType {
   setVolume: (vol: number) => void;
   selectTrack: (trackId: string) => void;
   
-  // Biometric punch in state
+  // Punch in state
   hasPunchedIn: boolean;
   punchIn: () => void;
   
@@ -56,6 +65,30 @@ const defaultStats: UserStats = {
   choicesMade: 0
 };
 
+const ROOM_TIMES: Record<OfficeRoomId, string> = {
+  exterior: '08:58 AM',
+  reception: '09:02 AM',
+  developer: '10:15 AM',
+  meeting: '11:30 AM',
+  boss: '01:45 PM',
+  hr: '03:10 PM',
+  cafeteria: '04:20 PM',
+  break: '04:57 PM',
+  exit: '05:59 PM'
+};
+
+const ROOM_MOOD_MAP: Record<OfficeRoomId, MoodId> = {
+  exterior: 'monday',
+  reception: 'monday',
+  developer: 'developer',
+  meeting: 'meeting',
+  boss: 'boss',
+  hr: 'appraisal',
+  cafeteria: 'salary',
+  break: 'friday',
+  exit: 'resignation'
+};
+
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -63,10 +96,16 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [selectedZone, setSelectedZoneState] = useState<OfficeZone>('reception');
   const [selectedMoodId, setSelectedMoodIdState] = useState<MoodId>('monday');
   const [selectedLifeProfile, setSelectedLifeProfileState] = useState<CorporateLifeId>('developer');
+  
+  // Office World State
+  const [currentRoom, setCurrentRoomState] = useState<OfficeRoomId>('exterior');
+  const [discoveredRooms, setDiscoveredRooms] = useState<string[]>(['exterior']);
+  const [discoveries, setDiscoveries] = useState<string[]>([]);
+  const [officeTime, setOfficeTime] = useState<string>('08:58 AM');
+
   const [currentMomentIndex, setCurrentMomentIndex] = useState<number>(0);
   const [activeTab, setActiveTabState] = useState<string>('experience');
   const [stats, setStats] = useState<UserStats>(defaultStats);
-  
   const [hasPunchedIn, setHasPunchedIn] = useState<boolean>(false);
 
   // Filter available tracks exclusively by language
@@ -86,12 +125,40 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const currentMoment = currentMomentsList[currentMomentIndex % currentMomentsList.length];
 
+  const navigateToRoom = (roomId: OfficeRoomId) => {
+    soundFx.playMoodSwitch();
+    setCurrentRoomState(roomId);
+    if (!discoveredRooms.includes(roomId)) {
+      setDiscoveredRooms((prev) => [...prev, roomId]);
+    }
+    if (ROOM_TIMES[roomId]) {
+      setOfficeTime(ROOM_TIMES[roomId]);
+    }
+    const targetMoodId = ROOM_MOOD_MAP[roomId];
+    if (targetMoodId) {
+      setSelectedMoodIdState(targetMoodId);
+      const targetMood = MOODS.find((m) => m.id === targetMoodId);
+      if (targetMood) {
+        const trackId = targetMood.songTrackId[language];
+        if (SONGS[trackId]) {
+          setCurrentTrack(SONGS[trackId]);
+        }
+      }
+    }
+  };
+
+  const addDiscovery = (discoveryId: string) => {
+    if (!discoveries.includes(discoveryId)) {
+      soundFx.playTrophyUnlock();
+      setDiscoveries((prev) => [...prev, discoveryId]);
+    }
+  };
+
   const setSelectedLifeProfile = (profile: CorporateLifeId) => {
     soundFx.playClick();
     setSelectedLifeProfileState(profile);
   };
 
-  // Set language & auto-switch music track to matching language track
   const setLanguage = (lang: Language) => {
     soundFx.playClick();
     setLanguageState(lang);
@@ -181,7 +248,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const makeChoice = (choiceId: string) => {
     soundFx.playScoreTick();
-    const choice = currentMoment.choices.find((c) => c.id === choiceId);
+    const choice = currentMoment?.choices.find((c) => c.id === choiceId);
     if (choice) {
       setStats((prev) => ({
         corporatePoints: Math.min(100, Math.max(0, prev.corporatePoints + choice.points.corporate)),
@@ -195,15 +262,18 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const randomizeMoment = () => {
     soundFx.playClick();
-    const allMoods: MoodId[] = ['monday', 'meeting', 'salary', 'burnout', 'boss', 'resignation', 'friday', 'appraisal', 'developer', 'startup'];
-    const randomMood = allMoods[Math.floor(Math.random() * allMoods.length)];
-    setSelectedMoodId(randomMood);
+    const allRooms: OfficeRoomId[] = ['reception', 'developer', 'meeting', 'boss', 'hr', 'cafeteria', 'break'];
+    const randomRoom = allRooms[Math.floor(Math.random() * allRooms.length)];
+    navigateToRoom(randomRoom);
   };
 
   const resetProgress = () => {
     soundFx.playClick();
     setStats(defaultStats);
     setCurrentMomentIndex(0);
+    setCurrentRoomState('exterior');
+    setDiscoveredRooms(['exterior']);
+    setDiscoveries([]);
   };
 
   return (
@@ -217,6 +287,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         setSelectedMoodId,
         selectedLifeProfile,
         setSelectedLifeProfile,
+        currentRoom,
+        navigateToRoom,
+        discoveredRooms,
+        discoveries,
+        addDiscovery,
+        officeTime,
         currentMomentIndex,
         currentMomentsList,
         currentMoment,

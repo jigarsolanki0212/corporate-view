@@ -4,6 +4,17 @@ export type OfficeZone = 'reception' | 'cubicle' | 'chai' | 'canteen' | 'gamezon
 
 export type CorporateLifeId = 'developer' | 'corporate' | 'startup' | 'remote' | 'fresher' | 'manager';
 
+export type OfficeRoomId = 
+  | 'exterior' 
+  | 'reception' 
+  | 'developer' 
+  | 'meeting' 
+  | 'boss' 
+  | 'hr' 
+  | 'cafeteria' 
+  | 'break' 
+  | 'exit';
+
 export type MoodId =
   | 'monday'
   | 'meeting'
